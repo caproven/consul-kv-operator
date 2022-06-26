@@ -1,0 +1,19 @@
+domain: caproven.info
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: consul-kv-operator
+repo: github.com/caproven/consul-kv-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: caproven.info
+  group: consul-kv
+  kind: ConsulKVSecret
+  path: github.com/caproven/consul-kv-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"
