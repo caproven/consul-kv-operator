@@ -42,7 +42,22 @@ type ConsulKVSecretReconciler struct {
 func (r *ConsulKVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// TODO should use finalizers to stop syncing goroutine?
+
+	kvSecret := &consulkvv1alpha1.ConsulKVSecret{}
+	err := r.Get(ctx, req.NamespacedName, kvSecret)
+	if err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if !kvSecret.GetDeletionTimestamp().IsZero() {
+		return ctrl.Result{}, nil
+	}
+
+	secretName := kvSecret.Spec.Secret.Name
+	if secretName == "" {
+		secretName = kvSecret.GetName()
+	}
 
 	return ctrl.Result{}, nil
 }

@@ -22,8 +22,35 @@ import (
 
 // ConsulKVSecretSpec defines the desired state of ConsulKVSecret
 type ConsulKVSecretSpec struct {
-	// Foo is an example field of ConsulKVSecret. Edit consulkvsecret_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Source ConsulKVSecretSource `json:"source"`
+	Secret ConsulKVSecretSecret `json:"secret"`
+}
+
+type ConsulKVSecretSource struct {
+	// Address of the Consul server
+	Address string `json:"address"`
+
+	// Token used for authentication with the Consul server
+	// TODO change to secretRef
+	// +optional
+	Token string `json:"token,omitempty"`
+}
+
+type ConsulKVSecretSecret struct {
+	// Name of the secret that will be created. Is immutable. Defaults
+	// to the ConsulKVSecret name
+	// +optional
+	Name string `json:"name,omitempty"`
+
+	// Data values that will populate the secret
+	Data []ConsulKVSecretDataEntry `json:"data,omitempty"`
+}
+
+// ConsulKVSecretDataEntry defines an entry to be populated in the
+// secret based on a value in Consul
+type ConsulKVSecretDataEntry struct {
+	SourceKey string `json:"sourcekey"`
+	Key       string `json:"key"`
 }
 
 // ConsulKVSecretStatus defines the observed state of ConsulKVSecret
