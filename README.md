@@ -1,11 +1,14 @@
 # consul-kv-operator
-// TODO(user): Add simple overview of use/purpose
 
 ## Run Consul
-Consul can be installed in k8s through a helm chart. Run the below command:
+Consul can be installed in k8s through a helm chart. Run the below command(s):
 
 ```bash
-helm install consul hashicorp/consul  --create-namespace --namespace consul --version "0.43.0" --values consul-config.yaml
+# Only needed first time for machine
+helm repo add hashicorp https://helm.releases.hashicorp.com
+
+# Install on k8s cluster
+helm install consul hashicorp/consul  --create-namespace --namespace consul --version "0.46.0" --values consul-config.yaml
 ```
 
 This installs Consul into its own namespace, `consul`.
@@ -24,7 +27,7 @@ Here, you have access to the CLI. Run `consul help` for more info.
 
 ### Remote Access
 
-Consul can also be accessed through an [API](https://www.consul.io/api-docs).
+Consul can also be accessed through an [API](https://www.consul.io/api-docs) or a [CLI](https://www.consul.io/downloads).
 
 Port-forward the Consul service to your local machine:
 
@@ -32,7 +35,7 @@ Port-forward the Consul service to your local machine:
 kubectl port-forward svc/consul-consul-server 8500:8500 &
 ```
 
-Example usage:
+Example usage of API:
 
 * Lookup a value
 
@@ -53,6 +56,26 @@ Example usage:
 
     ```bash
     curl \
-    --header "X-Consul-Token: <consul token>"
+    --header "X-Consul-Token: <token>"
     <rest of request>
+    ```
+
+Example usage of CLI:
+
+* Lookup a value
+
+    ```bash
+    consul kv get <key>
+    ```
+
+* Write a value
+
+    ```bash
+    consul kv put <key> <value>
+    ```
+
+* Authenticated
+
+    ```bash
+    consul <command> -token='<token>'
     ```

@@ -22,13 +22,19 @@ import (
 
 // ConsulKVSecretSpec defines the desired state of ConsulKVSecret
 type ConsulKVSecretSpec struct {
-	Source ConsulKVSecretSource `json:"source"`
-	Secret ConsulKVSecretSecret `json:"secret"`
+	Source ConsulKVSecretSource  `json:"source"`
+	Values []ConsulKVSecretValue `json:"values"`
+	Output ConsulKVSecretOutput  `json:"secret"`
 }
 
+// ConsulKVSecretSource describes the Consul server acting as the source
+// of values
 type ConsulKVSecretSource struct {
-	// Address of the Consul server
-	Address string `json:"address"`
+	// Host of the Consul server
+	Host string `json:"host"`
+
+	// Port of the Consul server
+	Port int `json:"port"`
 
 	// Token used for authentication with the Consul server
 	// TODO change to secretRef
@@ -36,21 +42,23 @@ type ConsulKVSecretSource struct {
 	Token string `json:"token,omitempty"`
 }
 
-type ConsulKVSecretSecret struct {
+// ConsulKVSecretValue defines an entry to be populated in the
+// secret based on a value in Consul
+type ConsulKVSecretValue struct {
+	// SourceKey is the key in the Consul KV store whose value will be pulled
+	SourceKey string `json:"sourcekey"`
+
+	// Key is the mapped key in a secret containing the value from Consul
+	Key string `json:"key"`
+}
+
+// ConsulKVSecretOutput describes the secret generated which holds values
+// read from the Consul server
+type ConsulKVSecretOutput struct {
 	// Name of the secret that will be created. Is immutable. Defaults
 	// to the ConsulKVSecret name
 	// +optional
 	Name string `json:"name,omitempty"`
-
-	// Data values that will populate the secret
-	Data []ConsulKVSecretDataEntry `json:"data,omitempty"`
-}
-
-// ConsulKVSecretDataEntry defines an entry to be populated in the
-// secret based on a value in Consul
-type ConsulKVSecretDataEntry struct {
-	SourceKey string `json:"sourcekey"`
-	Key       string `json:"key"`
 }
 
 // ConsulKVSecretStatus defines the observed state of ConsulKVSecret
