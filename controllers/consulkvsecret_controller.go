@@ -24,6 +24,7 @@ import (
 	"net/http"
 
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -80,8 +81,19 @@ func (r *ConsulKVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		},
 		Data: data,
 	}
+	ctrl.SetControllerReference(kvSecret, output, r.Scheme)
 
-	r.Create(ctx, output)
+	err = r.Create(ctx, output)
+	if k8serrors.IsAlreadyExists(err) {
+		err = r.Update(ctx, output)
+		if err != nil {
+			l.Error(err, "Failed to update secret")
+			return ctrl.Result{}, err
+		}
+	} else {
+		l.Error(err, "Failed to create secret")
+		return ctrl.Result{}, err
+	}
 
 	l.Info("Finished reconciling ConsulKVSecret")
 
@@ -123,5 +135,6 @@ func lookupConsulKV(cs *consulkvv1alpha1.ConsulKVSecret, key string) ([]byte, er
 func (r *ConsulKVSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&consulkvv1alpha1.ConsulKVSecret{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
