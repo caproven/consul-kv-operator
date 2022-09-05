@@ -34,12 +34,13 @@ spec:
         args:
         - --leader-elect
         image: controller:latest
+        imagePullPolicy: Never
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - "ALL"
+          capabilities:
+            drop:
+              - "ALL"
         livenessProbe:
           httpGet:
             path: /healthz

@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the consul-kv v1alpha1 API group
-//+kubebuilder:object:generate=true
-//+groupName=consul-kv.caproven.info
+// +kubebuilder:object:generate=true
+// +groupName=consul-kv.caproven.info
 package v1alpha1
 
 import (
