@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -113,8 +115,7 @@ func secretData(cs *consulkvv1alpha1.ConsulKVSecret) (map[string][]byte, error) 
 }
 
 func lookupConsulKV(cs *consulkvv1alpha1.ConsulKVSecret, key string) ([]byte, error) {
-	// TODO how to enable https?
-	addr := fmt.Sprintf("http://%s:%d/v1/kv/%s", cs.Spec.Source.Host, cs.Spec.Source.Port, key)
+	addr := fmt.Sprintf("%s:%d/v1/kv/%s", cs.Spec.Source.Host, cs.Spec.Source.Port, key)
 	resp, err := http.Get(addr)
 	if err != nil {
 		return nil, err
@@ -127,8 +128,30 @@ func lookupConsulKV(cs *consulkvv1alpha1.ConsulKVSecret, key string) ([]byte, er
 	if err != nil {
 		return nil, err
 	}
+	if len(body) == 0 {
+		return []byte{}, nil
+	}
 
-	return body, nil
+	r := []kvResponse{}
+	if err := json.Unmarshal(body, &r); err != nil {
+		return nil, err
+	}
+
+	if len(r) != 1 {
+		return nil, fmt.Errorf("only expected 1 value, got %d", len(r))
+	}
+
+	val, err := base64.StdEncoding.DecodeString(r[0].Value)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode value from Consul: %v", err)
+	}
+
+	return val, nil
+}
+
+type kvResponse struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 // SetupWithManager sets up the controller with the Manager.
