@@ -6,9 +6,9 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - consul-kv.caproven.info
+  - ""
   resources:
-  - consulkvsecrets
+  - secrets
   verbs:
   - create
   - delete
@@ -20,13 +20,25 @@ rules:
 - apiGroups:
   - consul-kv.caproven.info
   resources:
-  - consulkvsecrets/finalizers
+  - kvsecrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - consul-kv.caproven.info
+  resources:
+  - kvsecrets/finalizers
   verbs:
   - update
 - apiGroups:
   - consul-kv.caproven.info
   resources:
-  - consulkvsecrets/status
+  - kvsecrets/status
   verbs:
   - get
   - patch

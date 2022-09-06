@@ -20,16 +20,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ConsulKVSecretSpec defines the desired state of ConsulKVSecret
-type ConsulKVSecretSpec struct {
-	Source ConsulKVSecretSource  `json:"source"`
-	Values []ConsulKVSecretValue `json:"values"`
-	Output ConsulKVSecretOutput  `json:"secret"`
+// KVSecretSpec defines the desired state of KVSecret
+type KVSecretSpec struct {
+	Source SourceSpec   `json:"source"`
+	Values []KeyMapping `json:"values"`
+	Output OutputSpec   `json:"secret"`
 }
 
-// ConsulKVSecretSource describes the Consul server acting as the source
+// SourceSpec describes the Consul server acting as the source
 // of values
-type ConsulKVSecretSource struct {
+type SourceSpec struct {
 	// Host of the Consul server
 	Host string `json:"host"`
 
@@ -42,9 +42,9 @@ type ConsulKVSecretSource struct {
 	Token string `json:"token,omitempty"`
 }
 
-// ConsulKVSecretValue defines an entry to be populated in the
+// KeyMapping defines an entry to be populated in the
 // secret based on a value in Consul
-type ConsulKVSecretValue struct {
+type KeyMapping struct {
 	// SourceKey is the key in the Consul KV store whose value will be pulled
 	SourceKey string `json:"sourcekey"`
 
@@ -52,40 +52,40 @@ type ConsulKVSecretValue struct {
 	Key string `json:"key"`
 }
 
-// ConsulKVSecretOutput describes the secret generated which holds values
+// OutputSpec describes the secret generated which holds values
 // read from the Consul server
-type ConsulKVSecretOutput struct {
+type OutputSpec struct {
 	// Name of the secret that will be created. Is immutable. Defaults
-	// to the ConsulKVSecret name
+	// to the KVSecret name
 	// +optional
 	Name string `json:"name,omitempty"`
 }
 
-// ConsulKVSecretStatus defines the observed state of ConsulKVSecret
-type ConsulKVSecretStatus struct {
+// KVSecretStatus defines the observed state of KVSecret
+type KVSecretStatus struct {
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// ConsulKVSecret is the Schema for the consulkvsecrets API
-type ConsulKVSecret struct {
+// KVSecret is the Schema for the kvsecrets API
+type KVSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ConsulKVSecretSpec   `json:"spec,omitempty"`
-	Status ConsulKVSecretStatus `json:"status,omitempty"`
+	Spec   KVSecretSpec   `json:"spec,omitempty"`
+	Status KVSecretStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// ConsulKVSecretList contains a list of ConsulKVSecret
-type ConsulKVSecretList struct {
+// KVSecretList contains a list of KVSecret
+type KVSecretList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ConsulKVSecret `json:"items"`
+	Items           []KVSecret `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&ConsulKVSecret{}, &ConsulKVSecretList{})
+	SchemeBuilder.Register(&KVSecret{}, &KVSecretList{})
 }

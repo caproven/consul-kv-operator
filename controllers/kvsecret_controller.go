@@ -33,29 +33,30 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	consulkvv1alpha1 "github.com/caproven/consul-kv-operator/api/v1alpha1"
+	kvv1alpha1 "github.com/caproven/consul-kv-operator/api/v1alpha1"
 )
 
-// ConsulKVSecretReconciler reconciles a ConsulKVSecret object
-type ConsulKVSecretReconciler struct {
+// KVSecretReconciler reconciles a KVSecret object
+type KVSecretReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=consul-kv.caproven.info,resources=consulkvsecrets,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=consul-kv.caproven.info,resources=consulkvsecrets/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=consul-kv.caproven.info,resources=consulkvsecrets/finalizers,verbs=update
+//+kubebuilder:rbac:groups=consul-kv.caproven.info,resources=kvsecrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=consul-kv.caproven.info,resources=kvsecrets/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=consul-kv.caproven.info,resources=kvsecrets/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *ConsulKVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *KVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
 
-	l.Info("Reconciling ConsulKVSecret")
+	l.Info("Reconciling KVSecret")
 
 	// TODO should use finalizers to stop syncing goroutine?
 
-	kvSecret := &consulkvv1alpha1.ConsulKVSecret{}
+	kvSecret := &kvv1alpha1.KVSecret{}
 	err := r.Get(ctx, req.NamespacedName, kvSecret)
 	if err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -97,12 +98,12 @@ func (r *ConsulKVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
-	l.Info("Finished reconciling ConsulKVSecret")
+	l.Info("Finished reconciling KVSecret")
 
 	return ctrl.Result{}, nil
 }
 
-func secretData(cs *consulkvv1alpha1.ConsulKVSecret) (map[string][]byte, error) {
+func secretData(cs *kvv1alpha1.KVSecret) (map[string][]byte, error) {
 	d := make(map[string][]byte)
 	for _, value := range cs.Spec.Values {
 		v, err := lookupConsulKV(cs, value.SourceKey)
@@ -114,7 +115,7 @@ func secretData(cs *consulkvv1alpha1.ConsulKVSecret) (map[string][]byte, error) 
 	return d, nil
 }
 
-func lookupConsulKV(cs *consulkvv1alpha1.ConsulKVSecret, key string) ([]byte, error) {
+func lookupConsulKV(cs *kvv1alpha1.KVSecret, key string) ([]byte, error) {
 	addr := fmt.Sprintf("%s:%d/v1/kv/%s", cs.Spec.Source.Host, cs.Spec.Source.Port, key)
 	resp, err := http.Get(addr)
 	if err != nil {
@@ -155,9 +156,9 @@ type kvResponse struct {
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ConsulKVSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *KVSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&consulkvv1alpha1.ConsulKVSecret{}).
+		For(&kvv1alpha1.KVSecret{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }

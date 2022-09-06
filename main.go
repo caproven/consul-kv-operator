@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	consulkvv1alpha1 "github.com/caproven/consul-kv-operator/api/v1alpha1"
+	kvv1alpha1 "github.com/caproven/consul-kv-operator/api/v1alpha1"
 	"github.com/caproven/consul-kv-operator/controllers"
 	//+kubebuilder:scaffold:imports
 )
@@ -44,7 +44,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(consulkvv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(kvv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -89,11 +89,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ConsulKVSecretReconciler{
+	if err = (&controllers.KVSecretReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ConsulKVSecret")
+		setupLog.Error(err, "unable to create controller", "controller", "KVSecret")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

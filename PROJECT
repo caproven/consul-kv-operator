@@ -13,7 +13,7 @@ resources:
   controller: true
   domain: caproven.info
   group: consul-kv
-  kind: ConsulKVSecret
+  kind: KVSecret
   path: github.com/caproven/consul-kv-operator/api/v1alpha1
   version: v1alpha1
 version: "3"
