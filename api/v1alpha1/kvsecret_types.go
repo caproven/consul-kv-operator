@@ -24,17 +24,20 @@ import (
 type KVSecretSpec struct {
 	Source SourceSpec   `json:"source"`
 	Values []KeyMapping `json:"values"`
-	Output OutputSpec   `json:"secret"`
+	Output OutputSpec   `json:"output"`
+	// RefreshInterval is the duration between attempts to sync
+	// the Consul data
+	RefreshInterval *int64 `json:"refreshInterval,omitempty"`
 }
 
 // SourceSpec describes the Consul server acting as the source
 // of values
 type SourceSpec struct {
 	// Host of the Consul server
-	Host string `json:"host"`
+	Host string `json:"host,omitempty"`
 
 	// Port of the Consul server
-	Port int `json:"port"`
+	Port int `json:"port,omitempty"`
 
 	// Token used for authentication with the Consul server
 	// TODO change to secretRef

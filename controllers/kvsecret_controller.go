@@ -24,9 +24,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,6 +35,8 @@ import (
 
 	kvv1alpha1 "github.com/caproven/consul-kv-operator/api/v1alpha1"
 )
+
+const defaultRefresh = 60 * time.Second
 
 // KVSecretReconciler reconciles a KVSecret object
 type KVSecretReconciler struct {
@@ -71,6 +73,11 @@ func (r *KVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		secretName = kvSecret.GetName()
 	}
 
+	refresh := defaultRefresh
+	if kvSecret.Spec.RefreshInterval != nil {
+		refresh = time.Second * time.Duration(*kvSecret.Spec.RefreshInterval)
+	}
+
 	data, err := secretData(kvSecret)
 	if err != nil {
 		l.Error(err, "Failed to fetch secret data from Consul")
@@ -82,25 +89,25 @@ func (r *KVSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			Name:      secretName,
 			Namespace: kvSecret.GetNamespace(),
 		},
-		Data: data,
+		Data: map[string][]byte{},
 	}
-	ctrl.SetControllerReference(kvSecret, output, r.Scheme)
 
-	err = r.Create(ctx, output)
-	if k8serrors.IsAlreadyExists(err) {
-		err = r.Update(ctx, output)
-		if err != nil {
-			l.Error(err, "Failed to update secret")
-			return ctrl.Result{}, err
+	_, err = ctrl.CreateOrUpdate(ctx, r.Client, output, func() error {
+		if err := ctrl.SetControllerReference(kvSecret, output, r.Scheme); err != nil {
+			return err
 		}
-	} else {
-		l.Error(err, "Failed to create secret")
+		for k, v := range data {
+			output.Data[k] = v
+		}
+		return nil
+	})
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	l.Info("Finished reconciling KVSecret")
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: refresh}, nil
 }
 
 func secretData(cs *kvv1alpha1.KVSecret) (map[string][]byte, error) {
