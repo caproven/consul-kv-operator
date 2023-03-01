@@ -51,6 +51,9 @@ type KeyMapping struct {
 	// SourceKey is the key in the Consul KV store whose value will be pulled
 	SourceKey string `json:"sourcekey"`
 
+	// TODO optional? Could map Consul keys (can include any chars) to valid config keys (alphanumeric, '-', '_', or '.').
+	// However mapping may reduce usability, i.e., how many a user know that "myapp/config" gets mapped to "myapp_config"?
+
 	// Key is the mapped key in a secret containing the value from Consul
 	Key string `json:"key"`
 }
